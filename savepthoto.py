@@ -45,7 +45,22 @@ def create_yandex_disk_folder(folder_name, token_yandex_disk):
         print(f"Ошибка при создании папки {folder_name} на Яндекс.Диске")
         return False
 
-def upload_photo_to_yandex_disk(file_path, upload_url, token_yandex_disk):
+def get_photos_from_source(source_url):
+    """
+    Получает фотографии с источника по указанному URL.
+    Возвращает список байтов фотографий или None, если возникла ошибка.
+    """
+    try:
+        response = requests.get(source_url)
+        if response.status_code == 200:
+            return response.content
+        else:
+            print(f"Ошибка при получении фотографий с источника: {response.status_code}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка при выполнении запроса: {e}")
+        return None
+def upload_photo_to_yandex_disk(photo_bytes, upload_url, token_yandex_disk):
     """
     Загружает фотографию на Яндекс.Диск.
     Возвращает True, если загрузка прошла успешно, иначе False.
@@ -53,16 +68,15 @@ def upload_photo_to_yandex_disk(file_path, upload_url, token_yandex_disk):
     headers = {
         "Authorization": f"OAuth {token_yandex_disk}",
     }
-    with open(file_path, "rb") as f:
-        response = requests.put(upload_url, headers=headers, files={"file": f})
+    files = {"file": ("photo.jpg", photo_bytes)}
+    response = requests.put(upload_url, headers=headers, files=files)
 
     if response.status_code == 201:
-        print(f"Фотография {file_path} успешно загружена на Яндекс.Диск")
+        print("Фотография успешно загружена на Яндекс.Диск")
         return True
     else:
-        print(f"Ошибка при загрузке фотографии {file_path} на Яндекс.Диск")
+        print(f"Ошибка при загрузке фотографии на Яндекс.Диск: {response.status_code}")
         return False
-
 
 # def backup_vk_profile_photos(user_id, token_yandex_disk, token_VK, count=999):
     # Получение фотографий с профиля VK
